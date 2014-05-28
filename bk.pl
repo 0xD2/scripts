@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# ./bk.pl --backup=backup09 --fe=fe113 --pool=1 --db --date=21052014 --client=ddd01
 
 use Getopt::Long;
 
