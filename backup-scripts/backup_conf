@@ -1,0 +1,24 @@
+#############################
+#			    #
+# config for backup scripts #
+#			    #
+#############################
+
+HOST=hostname        		# Hostname of backup-server with FTP enabled
+USERNAME=ftp_user    		# Your FTP user
+PASS=ftp_password    		# Password for your FTP user
+WORK_DIR="/opt/backup" 		# Absolute path to directory where scripts is
+BACKUP_DIR="backup"		# Directory for temporary dumps
+mysqluser="root"		# MySQL user w/ access to databases
+mysqlpassword=""		# Password
+mysql_bd='paste txt'		# Databases 
+EXCLUDE_FILES=""		
+BACKUP_FILES=(			
+        /etc
+        /opt
+)				# Directories for backuping
+BACKLOG="/tmp/backup.log"    	# Path to log file.
+MYSQL_DIR="dumps"    		# Temp directory for MySQL dumps
+CONTENT_DIR="content"		# Temp directory for directory archives
+NUMBACKUPS=2        		# Number of content archives		
+NUMBACKUPS_DB=3			# Number of MySQL dumps
