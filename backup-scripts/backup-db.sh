@@ -9,6 +9,8 @@
 # Example: every week, save backup for a 1 month.                                          #
 # 1 0 * * 1 /bin/bash /opt/backup-f.sh backup                                              #
 # 0 1 * * 1 /bin/bash /opt/backup-f.sh cleanold                                            #
+# edit in 'backup_conf' option NUMBACKUPS_DB=4                                             #
+#                                                                                          #
 # OR                                                                                       #
 # /bin/bash /opt/backup-f.sh backup -- for make backup immediatly.                         #
 #                                                                                          #
