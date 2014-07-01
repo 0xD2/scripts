@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ############################################################################################
-#Backup script via ftp (MySQL Databases)                                                                    #
+#Backup script via ftp (MySQL Databases)                                                   #
 # usage:                                                                                   #
 #       script.sh cleanold -- delete old backup, count of dumps specified in config file.  #
 #       script.sh backup -- make backup.                                                   #
