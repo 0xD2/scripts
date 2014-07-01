@@ -26,7 +26,14 @@ touch $BACKLOG
 
 arch_name="`date '+%Y-%m-%d--%H-%M'`"
 
-echo "[`date +%F--%H-%M`] ====START DATABASE BACKUP====" >> $BACKLOG
+echo2file() {
+        message=$1
+        date_log="`date +%F--%H-%M`"
+        echo "[$date_log] $message" >> $BACKLOG
+
+}
+
+echo2file("====START DATABASE BACKUP====")
 
 
 #create new mysqldump bases from mysql_bd
@@ -34,27 +41,27 @@ mysql_archive()
 {
 
 		cd $BACKUP_DIR/$MYSQL_DIR
-		echo "[`date +%F--%H-%M`] ARCHIVE: Im in `pwd`" >> $BACKLOG
+		echo2file("ARCHIVE: Im in `pwd`")
 		rm -f ./*
 
 		for i in $mysql_bd;
 		do
         		/usr/bin/mysqldump --opt --add-drop-table --force --user=$mysqluser $i  > $i.sql
 			if [[ $? -gt 0 ]]; then
-				 echo "[`date +%F--%H-%M`] ARCHIVE: Dump db $i -- failed." >> $BACKLOG
+				 echo2file("ARCHIVE: Dump db $i -- failed.")
 				 exit 1;
 			else
-				 echo "[`date +%F--%H-%M`] ARCHIVE: Dump db $i -- successfull." >> $BACKLOG
+				 echo2file("ARCHIVE: Dump db $i -- successfull.")
 			fi
 
-			echo "[`date +%F--%H-%M`] ARCHIVE: Start archiving dump of $i" >> $BACKLOG
+			echo2file("ARCHIVE: Start archiving dump of $i")
 
 			tar cfz ${i}_${arch_name}.dump.tar.gz $i.sql
 			if [[ $? -gt 0 ]]; then
-                                 echo "[`date +%F--%H-%M`] ARCHIVE: Cant create archives in dir `pwd`." >> $BACKLOG
+                                 echo2file("ARCHIVE: Cant create archives in dir `pwd`.")
                                  exit 1;
                         else
-                                 echo "[`date +%F--%H-%M`] ARCHIVE: Archive created successful.  " >> $BACKLOG
+                                 echo2file("ARCHIVE: Archive created successful.")
                         fi
 		done
 
@@ -64,10 +71,10 @@ mysql_archive()
 delete_old_db_ftp ()
 {
 	db=$1
-	echo "[`date +%F--%H-%M`] DELETE: Deleting old db backups for $db." >> $BACKLOG
+	echo2file("DELETE: Deleting old db backups for $db.")
         for i in `cat /tmp/list_bk | grep $db | head -n -$NUMBACKUPS_DB`;
         	do
-        		echo "[`date +%F--%H-%M`] DELETE: Deleting dump $i.">> $BACKLOG
+        		echo2file("DELETE: Deleting dump $i.")
 			/usr/bin/ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         		user $USERNAME $PASS
         		cd $BACKUP_DIR/$MYSQL_DIR
@@ -81,7 +88,7 @@ EOF
 rotate_db()
 {
 
-	echo "[`date +%F--%H-%M`] ROTATE: Im in `pwd`" >> $BACKLOG
+	echo2file("ROTATE: Im in `pwd`")
 
 	/usr/bin/ftp -n -i $HOST 1>/tmp/ftp_list <<EOF
 	user $USERNAME $PASS
@@ -95,9 +102,9 @@ EOF
         for i in $mysql_bd;
               do
 		if (("`cat /tmp/list_bk | grep $i | wc -l`" < "$NUMBACKUPS_DB" ));  then
-                	echo "[`date +%F--%H-%M`] ROTATE: Database $i has less then $NUMBACKUPS_DB dumps, nothing delete!" >> $BACKLOG
+                	echo2file("ROTATE: Database $i has less then $NUMBACKUPS_DB dumps, nothing delete!")
         	else
-			echo "[`date +%F--%H-%M`] ROTATE: Database $i has more then $NUMBACKUPS_DB, trying delete old dumps:" >> $BACKLOG
+			echo2file("ROTATE: Database $i has more then $NUMBACKUPS_DB, trying delete old dumps:")
                 	delete_old_db_ftp "$i"
         	fi
 	done
@@ -107,10 +114,10 @@ EOF
 
 put_backup()
 {
- 	echo "[`date +%F--%H-%M`] PUT_BACKUP: Putting dump backups to FTP server..." >> $BACKLOG
+ 	echo2file("PUT_BACKUP: Putting dump backups to FTP server...")
 
 	cd $WORK_DIR/$BACKUP_DIR/$MYSQL_DIR
-	echo "[`date +%F--%H-%M`] PUT_BACKUP: Im in `pwd`" >> $BACKLOG
+	echo2file("PUT_BACKUP: Im in `pwd`")
 
 	/usr/bin/ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         user $USERNAME $PASS
@@ -119,7 +126,7 @@ put_backup()
         bye
 EOF
 
-	echo "[`date +%F--%H-%M`] PUT_BACKUP: End uploading backups..." >> $BACKLOG
+	echo2file("PUT_BACKUP: End uploading backups...")
 
 }
 
@@ -131,4 +138,4 @@ case "$1" in
 esac
 
 
-echo "[`date +%F--%H-%M`] ====END DATABASE BACKUP====" >> $BACKLOG
+echo2file("====END DATABASE BACKUP====")

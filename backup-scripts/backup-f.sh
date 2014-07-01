@@ -26,37 +26,44 @@ touch $BACKLOG
 
 arch_name="`date '+%Y-%m-%d--%H-%M'`"
 
-echo "[`date +%F--%H-%M`] ====START CONTENT BACKUP====" >> $BACKLOG
 
+echo2file() {
+	message=$1
+	date_log="`date +%F--%H-%M`"
+	echo "[$date_log] $message" >> $BACKLOG
+
+}
+
+echo2file("====START CONTENT BACKUP====")
 
 #create new content archive from BACKUP_FILES
 content_archive()
 {
 
 		cd $BACKUP_DIR/$CONTENT_DIR
-		echo "[`date +%F--%H-%M`] ARCHIVE: Im in `pwd`" >> $BACKLOG
+		echo2file("ARCHIVE: Im in `pwd`")
 		rm -f ./*
 
 		for DIR in ${BACKUP_FILES[@]};
 		do
-			echo "[`date +%F--%H-%M`] ARCHIVE: Trying create archive for $DIR." >> $BACKLOG
+			echo2file("ARCHIVE: Trying create archive for $DIR.")
 
 			tar rf $arch_name.tar $DIR &>> $BACKLOG
 			if [[ $? -gt 0 ]]; then
-                                 echo "[`date +%F--%H-%M`] ARCHIVE: Archive content $DIR -- failed." >> $BACKLOG
+                                 echo2file("ARCHIVE: Archive content $DIR -- failed.")
                                  exit 1;
                         else
-                                 echo "[`date +%F--%H-%M`] ARCHIVE: Archive content $DIR -- successfull." >> $BACKLOG
+                                 echo2file("ARCHIVE: Archive content $DIR -- successfull.")
                         fi
 
         	done;
 
 		gzip -7 $arch_name.tar
 		if [[ $? -gt 0 ]]; then
-                	echo "[`date +%F--%H-%M`] ARCHIVE: Cant gzip tar-files failed." >> $BACKLOG
+                	echo2file("ARCHIVE: Cant gzip tar-files failed.")
                         exit 1;
                 else
-                        echo "[`date +%F--%H-%M`] ARCHIVE: Gzip tar-files successfull." >> $BACKLOG
+                        echo2file("ARCHIVE: Gzip tar-files successfull.")
                 fi
         }
 
@@ -64,10 +71,10 @@ content_archive()
 delete_old_content_ftp ()
 {
 	file=$1
-	echo "[`date +%F--%H-%M`] DELETE: Deleting old content backups: $file." >> $BACKLOG
+	echo2file("DELETE: Deleting old content backups: $file.")
         for i in `cat /tmp/list_bk | head -n -$NUMBACKUPS`;
         	do
-        		echo "[`date +%F--%H-%M`] DELETE: Deleting $i.">> $BACKLOG
+        		echo2file("DELETE: Deleting $i.")
 			ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         		user $USERNAME $PASS
         		cd $BACKUP_DIR/$CONTENT_DIR
@@ -81,7 +88,7 @@ EOF
 rotate_content()
 {
 
-	echo "[`date +%F--%H-%M`] ROTATE: Im in `pwd`" >> $BACKLOG
+	echo2file("ROTATE: Im in `pwd`")
 
 	ftp -n -i $HOST 1>/tmp/ftp_list <<EOF
 	user $USERNAME $PASS
@@ -93,9 +100,9 @@ EOF
 	cat /tmp/ftp_list | awk '{print $9}' | grep 'tar.gz'  > /tmp/list_bk
 
 	if (("`cat /tmp/list_bk | wc -l`" < "$NUMBACKUPS" ));  then
-               	echo "[`date +%F--%H-%M`] ROTATE: Content $i has less then $NUMBACKUPS dumps, nothing delete!" >> $BACKLOG
+               	echo2file("ROTATE: Content $i has less then $NUMBACKUPS dumps, nothing delete!")
        	else
-		echo "[`date +%F--%H-%M`] ROTATE: Content $i has more then $NUMBACKUPS, trying delete old archives:" >> $BACKLOG
+		echo2file("ROTATE: Content $i has more then $NUMBACKUPS, trying delete old archives:")
                	delete_old_content_ftp
        	fi
         rm -f /tmp/list_bk /tmp/ftp_list
@@ -104,10 +111,10 @@ EOF
 
 put_backup()
 {
- 	echo "[`date +%F--%H-%M`] PUT_BACKUP: Putting backups to FTP server..." >> $BACKLOG
+ 	echo2file("PUT_BACKUP: Putting backups to FTP server...")
 
 	cd $WORK_DIR/$BACKUP_DIR/$CONTENT_DIR
-	echo "[`date +%F--%H-%M`] PUT_BACKUP: Im in `pwd`" >> $BACKLOG
+	echo2file("PUT_BACKUP: Im in `pwd`")
 
 	ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         user $USERNAME $PASS
@@ -116,7 +123,7 @@ put_backup()
         bye
 EOF
 
-	echo "[`date +%F--%H-%M`] PUT_BACKUP: End uploading backups..." >> $BACKLOG
+	echo2file("PUT_BACKUP: End uploading backups...")
 
 }
 
@@ -127,4 +134,4 @@ case "$1" in
         *) echo "script without parameters" ; exit 1 ;;
 esac
 
-echo "[`date +%F--%H-%M`] ====END CONTENT BACKUP====" >> $BACKLOG
+echo2file("====END CONTENT BACKUP====")
