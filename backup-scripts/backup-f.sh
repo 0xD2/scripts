@@ -28,42 +28,40 @@ arch_name="`date '+%Y-%m-%d--%H-%M'`"
 
 
 echo2file() {
-	message=$1
-	date_log="`date +%F--%H-%M`"
-	echo "[$date_log] $message" >> $BACKLOG
+	message="$1"
+#	date_log=`date +%F--%H:%M:%S`
+	echo "[`date +%F--%H:%M:%S`] $message" >> $BACKLOG
 
 }
 
-echo2file("====START CONTENT BACKUP====")
+echo2file "====START CONTENT BACKUP===="
 
 #create new content archive from BACKUP_FILES
 content_archive()
 {
-
 		cd $BACKUP_DIR/$CONTENT_DIR
-		echo2file("ARCHIVE: Im in `pwd`")
+		echo2file "ARCHIVE: Im in `pwd`"
 		rm -f ./*
 
 		for DIR in ${BACKUP_FILES[@]};
 		do
-			echo2file("ARCHIVE: Trying create archive for $DIR.")
+			echo2file "ARCHIVE: Trying create archive for $DIR."
 
 			tar rf $arch_name.tar $DIR &>> $BACKLOG
 			if [[ $? -gt 0 ]]; then
-                                 echo2file("ARCHIVE: Archive content $DIR -- failed.")
+                                 echo2file "ARCHIVE: Archive content $DIR -- failed."
                                  exit 1;
                         else
-                                 echo2file("ARCHIVE: Archive content $DIR -- successfull.")
+                                 echo2file "ARCHIVE: Archive content $DIR -- successfull."
                         fi
-
         	done;
 
 		gzip -7 $arch_name.tar
 		if [[ $? -gt 0 ]]; then
-                	echo2file("ARCHIVE: Cant gzip tar-files failed.")
+                	echo2file "ARCHIVE: Cant gzip tar-files failed."
                         exit 1;
                 else
-                        echo2file("ARCHIVE: Gzip tar-files successfull.")
+                        echo2file "ARCHIVE: Gzip tar-files successfull."
                 fi
         }
 
@@ -71,10 +69,10 @@ content_archive()
 delete_old_content_ftp ()
 {
 	file=$1
-	echo2file("DELETE: Deleting old content backups: $file.")
+	echo2file "DELETE: Deleting old content backups: $file."
         for i in `cat /tmp/list_bk | head -n -$NUMBACKUPS`;
         	do
-        		echo2file("DELETE: Deleting $i.")
+        		echo2file "DELETE: Deleting $i."
 			ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         		user $USERNAME $PASS
         		cd $BACKUP_DIR/$CONTENT_DIR
@@ -88,7 +86,7 @@ EOF
 rotate_content()
 {
 
-	echo2file("ROTATE: Im in `pwd`")
+	echo2file "ROTATE: Im in `pwd`"
 
 	ftp -n -i $HOST 1>/tmp/ftp_list <<EOF
 	user $USERNAME $PASS
@@ -100,21 +98,20 @@ EOF
 	cat /tmp/ftp_list | awk '{print $9}' | grep 'tar.gz'  > /tmp/list_bk
 
 	if (("`cat /tmp/list_bk | wc -l`" < "$NUMBACKUPS" ));  then
-               	echo2file("ROTATE: Content $i has less then $NUMBACKUPS dumps, nothing delete!")
+               	echo2file "ROTATE: Content $i has less then $NUMBACKUPS dumps, nothing delete!"
        	else
-		echo2file("ROTATE: Content $i has more then $NUMBACKUPS, trying delete old archives:")
+		echo2file "ROTATE: Content $i has more then $NUMBACKUPS, trying delete old archives:"
                	delete_old_content_ftp
        	fi
         rm -f /tmp/list_bk /tmp/ftp_list
-
 }
 
 put_backup()
 {
- 	echo2file("PUT_BACKUP: Putting backups to FTP server...")
+ 	echo2file "PUT_BACKUP: Putting backups to FTP server..."
 
 	cd $WORK_DIR/$BACKUP_DIR/$CONTENT_DIR
-	echo2file("PUT_BACKUP: Im in `pwd`")
+	echo2file "PUT_BACKUP: Im in `pwd`"
 
 	ftp -v -n -i $HOST 1>>$BACKLOG <<EOF
         user $USERNAME $PASS
@@ -122,8 +119,7 @@ put_backup()
         mput *.tar.gz
         bye
 EOF
-
-	echo2file("PUT_BACKUP: End uploading backups...")
+	echo2file "PUT_BACKUP: End uploading backups..."
 
 }
 
@@ -134,4 +130,4 @@ case "$1" in
         *) echo "script without parameters" ; exit 1 ;;
 esac
 
-echo2file("====END CONTENT BACKUP====")
+echo2file "====END CONTENT BACKUP===="
